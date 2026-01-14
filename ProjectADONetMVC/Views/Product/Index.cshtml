@@ -9,7 +9,10 @@
 @if(TempData["InfoMessage"] != null)
 {
     <div class="alert alert-info">
-        @TempData["InfoMessage"]
+        <strong>Information : </strong> @TempData["InfoMessage"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span>&times;</span>
+        </button>
     </div>
 }
 
