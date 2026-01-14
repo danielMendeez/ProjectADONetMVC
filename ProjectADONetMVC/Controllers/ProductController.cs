@@ -15,6 +15,12 @@ namespace ProjectADONetMVC.Controllers
         public ActionResult Index()
         {
             var productList = _productDAL.GetAllProducts();
+
+            if(productList.Count == 0) 
+            {
+                TempData["InfoMessage"] = "Currently products no avalible.";
+            }
+
             return View(productList);
         }
 
