@@ -13,7 +13,7 @@ namespace ProjectADONetMVC.DAL
     {
         string conString = ConfigurationManager.ConnectionStrings["adoConnectionString"].ToString();
 
-        //Get all products
+        //Get all Products
         public List<Producto> GetAllProducts()
         {
             List<Producto> productList = new List<Producto>();
@@ -46,6 +46,7 @@ namespace ProjectADONetMVC.DAL
             return productList;
         }
 
+        //Insert new Product
         public bool InsertProduct(Producto producto)
         {
             int id = 0;
@@ -71,6 +72,7 @@ namespace ProjectADONetMVC.DAL
             }
         }
 
+        //Verify if a Product exists
         public bool VerifyExistProduct(string NombreProducto)
         {
             using (SqlConnection connection = new SqlConnection(conString))
@@ -91,6 +93,69 @@ namespace ProjectADONetMVC.DAL
                 connection.Close();
 
                 return result == 1; // true si existe, false si no
+            }
+        }
+
+        //Get Product by ID
+        public List<Producto> GetProductByID(int ProductID)
+        {
+            List<Producto> productList = new List<Producto>();
+
+            using (SqlConnection connection = new SqlConnection(conString))
+            {
+                SqlCommand command = connection.CreateCommand();
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandText = "sp_GetProductByID";
+                command.Parameters.AddWithValue("@ProductID", ProductID);
+
+                SqlDataAdapter sqlDA = new SqlDataAdapter(command);
+                DataTable dtProducts = new DataTable();
+
+                connection.Open();
+                sqlDA.Fill(dtProducts);
+                connection.Close();
+
+                foreach (DataRow dr in dtProducts.Rows)
+                {
+                    productList.Add(new Producto
+                    {
+                        Id = Convert.ToInt32(dr["id"]),
+                        Nombre = dr["nombre"].ToString(),
+                        Precio = Convert.ToDecimal(dr["precio"]),
+                        Cantidad = Convert.ToInt32(dr["cantidad"])
+                    });
+                }
+
+            }
+
+            return productList;
+        }
+
+        //Update Product
+        public bool UpdateProduct(Producto producto)
+        {
+            int i = 0;
+            using (SqlConnection connection = new SqlConnection(conString))
+            {
+                SqlCommand command = new SqlCommand("sp_UpdateProducts", connection);
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@ProductoID", producto.Id);
+                command.Parameters.AddWithValue("@Nombre", producto.Nombre);
+                command.Parameters.AddWithValue("@Precio", producto.Precio);
+                command.Parameters.AddWithValue("@Cantidad", producto.Cantidad);
+
+                connection.Open();
+                // use ExecuteNonQuery() for insert, update and delete querys
+                i = command.ExecuteNonQuery();
+                connection.Close();
+            }
+            if (i > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
     }

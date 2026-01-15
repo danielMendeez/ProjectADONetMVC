@@ -78,21 +78,39 @@ namespace ProjectADONetMVC.Controllers
         // GET: Product/Edit/5
         public ActionResult Edit(int id)
         {
-            return View();
+            var product = _productDAL.GetProductByID(id).FirstOrDefault();
+            if(product == null)
+            {
+                TempData["InfoMessage"] = "Product not avalible.";
+                return RedirectToAction("Index");
+            }
+
+            return View(product);
         }
 
         // POST: Product/Edit/5
-        [HttpPost]
-        public ActionResult Edit(int id, FormCollection collection)
+        [HttpPost, ActionName("Edit")]
+        public ActionResult UpdateProduct(Producto producto)
         {
             try
             {
-                // TODO: Add update logic here
-
+                if(ModelState.IsValid)
+                {
+                    bool isUpdated = _productDAL.UpdateProduct(producto);
+                    if(isUpdated)
+                    {
+                        TempData["SuccessMessage"] = "Product details updated successfully.";
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "Unable to update the product details.";
+                    }
+                }
                 return RedirectToAction("Index");
             }
-            catch
+            catch (Exception ex)
             {
+                TempData["ErrorMessage"] = ex.Message;
                 return View();
             }
         }
