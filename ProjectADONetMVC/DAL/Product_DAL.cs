@@ -45,5 +45,30 @@ namespace ProjectADONetMVC.DAL
 
             return productList;
         }
+
+        public bool InsertProduct(Producto producto)
+        {
+            int id = 0;
+            using (SqlConnection connection = new SqlConnection(conString))
+            {
+                SqlCommand command = new SqlCommand("sp_InsertProducts", connection);
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@Nombre", producto.Nombre);
+                command.Parameters.AddWithValue("@Precio", producto.Precio);
+                command.Parameters.AddWithValue("@Cantidad", producto.Cantidad);
+
+                connection.Open();
+                // use ExecuteNonQuery() for insert, update and delete querys
+                id = command.ExecuteNonQuery();
+                connection.Close();
+            }
+            if(id > 0)
+            {
+                return true;
+            } else
+            {
+                return false;
+            }
+        }
     }
 }
