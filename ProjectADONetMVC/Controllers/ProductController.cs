@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using ProjectADONetMVC.DAL;
+using ProjectADONetMVC.Models;
 
 namespace ProjectADONetMVC.Controllers
 {
@@ -38,18 +39,40 @@ namespace ProjectADONetMVC.Controllers
 
         // POST: Product/Create
         [HttpPost]
-        public ActionResult Create(FormCollection collection)
+        public ActionResult Create(Producto producto)
         {
+            bool existProduct = false;
+            bool isInserted = false;
             try
             {
-                // TODO: Add insert logic here
-
+                if (ModelState.IsValid)
+                {
+                    existProduct = _productDAL.VerifyExistProduct(producto.Nombre);
+                    if(existProduct)
+                    {
+                        TempData["ErrorMessage"] = "Product is already available.";
+                    }
+                    else
+                    {
+                        isInserted = _productDAL.InsertProduct(producto);
+                        if (isInserted)
+                        {
+                            TempData["SuccessMessage"] = "Product details saved successfully.";
+                        }
+                        else
+                        {
+                            TempData["ErrorMessage"] = "Unable to save the product details.";
+                        } 
+                    }
+                }
                 return RedirectToAction("Index");
             }
-            catch
+            catch (Exception ex)
             {
+                TempData["ErrorMessage"] = ex.Message;
                 return View();
             }
+            
         }
 
         // GET: Product/Edit/5

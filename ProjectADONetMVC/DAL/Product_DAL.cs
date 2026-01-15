@@ -70,5 +70,28 @@ namespace ProjectADONetMVC.DAL
                 return false;
             }
         }
+
+        public bool VerifyExistProduct(string NombreProducto)
+        {
+            using (SqlConnection connection = new SqlConnection(conString))
+            {
+                SqlCommand command = new SqlCommand("sp_VerifyExistsProduct", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                // Parámetro de entrada
+                command.Parameters.AddWithValue("@Nombre", NombreProducto);
+
+                // Parámetro de retorno
+                SqlParameter returnParameter = command.Parameters.Add("@ReturnVal", SqlDbType.Int);
+                returnParameter.Direction = ParameterDirection.ReturnValue;
+
+                connection.Open();
+                command.ExecuteNonQuery();
+                int result = (int)returnParameter.Value;
+                connection.Close();
+
+                return result == 1; // true si existe, false si no
+            }
+        }
     }
 }
