@@ -47,7 +47,7 @@ namespace ProjectADONetMVC.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    existProduct = _productDAL.VerifyExistProduct(producto.Nombre);
+                    existProduct = _productDAL.VerifyExistNameProduct(producto.Nombre);
                     if(existProduct)
                     {
                         TempData["ErrorMessage"] = "Product is already available.";
@@ -118,21 +118,55 @@ namespace ProjectADONetMVC.Controllers
         // GET: Product/Delete/5
         public ActionResult Delete(int id)
         {
-            return View();
+            try
+            {
+                var product = _productDAL.GetProductByID(id).FirstOrDefault();
+                if (product == null)
+                {
+                    TempData["InfoMessage"] = "Product not avalible.";
+                    return RedirectToAction("Index");
+                }
+
+                return View(product);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return View();
+            }
         }
 
         // POST: Product/Delete/5
-        [HttpPost]
-        public ActionResult Delete(int id, FormCollection collection)
+        [HttpPost, ActionName("Delete")]
+        public ActionResult DeleteConfirmation(int id)
         {
+            bool existProduct = false;
+            string result = "";
+
             try
             {
-                // TODO: Add delete logic here
-
+                existProduct = _productDAL.VerifyExistIdProduct(id);
+                if (!existProduct)
+                {
+                    TempData["ErrorMessage"] = "Product is not available.";
+                }
+                else
+                {
+                    result = _productDAL.DeleteProduct(id);
+                    if(result.Contains("deleted"))
+                    {
+                        TempData["SuccessMessage"] = result;
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = result;
+                    }
+                }
                 return RedirectToAction("Index");
             }
-            catch
+            catch (Exception ex)
             {
+                TempData["ErrorMessage"] = ex.Message;
                 return View();
             }
         }

@@ -72,16 +72,40 @@ namespace ProjectADONetMVC.DAL
             }
         }
 
-        //Verify if a Product exists
-        public bool VerifyExistProduct(string NombreProducto)
+        //Verify if a name Product exists
+        public bool VerifyExistNameProduct(string NombreProducto)
         {
             using (SqlConnection connection = new SqlConnection(conString))
             {
-                SqlCommand command = new SqlCommand("sp_VerifyExistsProduct", connection);
+                SqlCommand command = new SqlCommand("sp_VerifyExistsNameProduct", connection);
                 command.CommandType = CommandType.StoredProcedure;
 
                 // Parámetro de entrada
                 command.Parameters.AddWithValue("@Nombre", NombreProducto);
+
+                // Parámetro de retorno
+                SqlParameter returnParameter = command.Parameters.Add("@ReturnVal", SqlDbType.Int);
+                returnParameter.Direction = ParameterDirection.ReturnValue;
+
+                connection.Open();
+                command.ExecuteNonQuery();
+                int result = (int)returnParameter.Value;
+                connection.Close();
+
+                return result == 1; // true si existe, false si no
+            }
+        }
+
+        //Verify if a Product exists by ID
+        public bool VerifyExistIdProduct(int ProductoID)
+        {
+            using (SqlConnection connection = new SqlConnection(conString))
+            {
+                SqlCommand command = new SqlCommand("sp_VerifyExistsIdProduct", connection);
+                command.CommandType = CommandType.StoredProcedure;
+
+                // Parámetro de entrada
+                command.Parameters.AddWithValue("@ProductoID", ProductoID);
 
                 // Parámetro de retorno
                 SqlParameter returnParameter = command.Parameters.Add("@ReturnVal", SqlDbType.Int);
@@ -157,6 +181,27 @@ namespace ProjectADONetMVC.DAL
             {
                 return false;
             }
+        }
+
+        //Delete Product
+        public string DeleteProduct(int ProductoID)
+        {
+            string result = "";
+            using (SqlConnection connection = new SqlConnection(conString))
+            {
+                SqlCommand command = new SqlCommand("sp_DeleteProducts", connection);
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@ProductoID", ProductoID);
+                command.Parameters.Add("@OutputMessage", SqlDbType.VarChar, 50).Direction = ParameterDirection.Output;
+
+                connection.Open();
+                // use ExecuteNonQuery() for insert, update and delete querys
+                command.ExecuteNonQuery();
+                result = command.Parameters["@OutputMessage"].Value.ToString();
+                connection.Close();
+            }
+
+            return result;
         }
     }
 }
